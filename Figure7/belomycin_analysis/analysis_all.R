@@ -333,10 +333,10 @@ dotplotmmp14_data<-dotplot_MMP14[["data"]]
 dotplotmmp14_data <- subset(dotplotmmp14_data, select = c(avg.exp.scaled, id))
 names(dotplotmmp14_data)[names(dotplotmmp14_data)=="avg.exp.scaled"] <- "Mmp14"
 
-dotplot_Cxcl5<-DotPlot(aggr_harmony, features = "Cxcl5")
-dotplotCxcl5_data<-dotplot_Cxcl5[["data"]]
-dotplotCxcl5_data <- subset(dotplotCxcl5_data, select = c(avg.exp.scaled, id))
-names(dotplotCxcl5_data)[names(dotplotCxcl5_data)=="avg.exp.scaled"] <- "Cxcl5"
+dotplot_Cthrc1<-DotPlot(aggr_harmony, features = "Cthrc1")
+dotplotCthrc1_data<-dotplot_Cthrc1[["data"]]
+dotplotCthrc1_data <- subset(dotplotCthrc1_data, select = c(avg.exp.scaled, id))
+names(dotplotCthrc1_data)[names(dotplotCthrc1_data)=="avg.exp.scaled"] <- "Cthrc1"
 
 dotplot_Igf1<-DotPlot(aggr_harmony, features = "Igf1")
 dotplotIgf1_data<-dotplot_Igf1[["data"]]
@@ -344,7 +344,7 @@ dotplotIgf1_data <- subset(dotplotIgf1_data, select = c(avg.exp.scaled, id))
 names(dotplotIgf1_data)[names(dotplotIgf1_data)=="avg.exp.scaled"] <- "Igf1"
 
 dotplot_data$Mmp14<-dotplotmmp14_data$Mmp14
-dotplot_data$Cxcl5<-dotplotCxcl5_data$Cxcl5
+dotplot_data$Cthrc1<-dotplotCthrc1_data$Cthrc1
 dotplot_data$Igf1<-dotplotIgf1_data$Igf1
 
 
@@ -359,7 +359,7 @@ ggplot(dotplot_data, aes(x = Mmp14, y = Runx1)) +
         se = FALSE,
         size = 0.5)+theme_ArchR()+ theme (legend.position = "none")
 
-ggplot(dotplot_data, aes(x = Cxcl5, y = Runx1)) +
+ggplot(dotplot_data, aes(x = Cthrc1, y = Runx1)) +
     geom_point(aes(color = factor(condition)), size=5) +
     stat_smooth(method = "lm",
         col = "black",

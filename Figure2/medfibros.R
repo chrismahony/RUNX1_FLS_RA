@@ -85,7 +85,7 @@ Idents(med_fibros)<-"Cluster_name"
 med_fibros$Cluster_name_tissue <- paste(Idents(med_fibros), med_fibros$Tissue, sep = "_")
 Idents(med_fibros)<-"Cluster_name_tissue"
 
-Dotplot_heatmap<-DotPlot(med_fibros, features = "TEAD3")
+Dotplot_heatmap<-DotPlot(med_fibros, features = "RUNX1")
 Dotplot_heatmap_data <- Dotplot_heatmap[["data"]]
 
 

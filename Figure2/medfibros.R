@@ -181,5 +181,105 @@ Heatmap(dotplot, border=T)
 
 ```
 
+```{r}
 
+med_fibros_no_lung$SampleID %>% unique()
+#extract avg. scaled expression for your gene in each cluster and sample
+Idents(med_fibros_no_lung)<-"SampleID"
+dotplot<-DotPlot(med_fibros_no_lung, features = "RUNX1_grn1")
+dotplot_data<-dotplot[["data"]]
+dotplot_data <- subset(dotplot_data, select = c(avg.exp.scaled, id))
+names(dotplot_data)[names(dotplot_data)=="avg.exp.scaled"] <- "Runx1"
+
+
+#dotplot_data <- dotplot_data %>% cSplit(splitCols = "id", sep=".")
+
+inflam_df <- paste(med_fibros$SampleID, med_fibros$InflamScore, sep=".") %>% unique() %>% as.data.frame() %>% cSplit(splitCols = ".", sep=".")
+
+colnames(inflam_df) <- c("id_1", "inflam", "extra")
+
+inflam_df <- inflam_df %>% replace(is.na(.), 0)
+
+inflam_df$inflam <- paste(inflam_df$inflam, inflam_df$extra, sep=".")
+inflam_df$inflam <- as.double(inflam_df$inflam)
+
+dotplot_data$id_1 <- dotplot_data$id
+
+final_df <- dotplot_data %>% 
+  left_join(inflam_df, by="id_1")
+
+
+#plot
+#dotplot_data_synovium <- dotplot_data[dotplot_data$condition_2 == "Synovium",]
+ggplot(final_df, aes(x = Runx1, y = inflam)) +
+    geom_point(aes(color = factor(id_1))) +
+    stat_smooth(method = "lm",
+        col = "black",
+        se = FALSE,
+        size = 0.5)+theme_ArchR()+ theme (legend.position = "none") #+
+        #facet_wrap(~id_2)
+
+
+ml = lm(Runx1~inflam, data = final_df)
+summary(ml)$r.squared
+
+library(ggpubr)
+
+ggscatter(final_df, x = "Runx1", y = "inflam",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )+ stat_cor(method = "pearson", label.x = -2, label.y = 1)
+```
+
+
+```{r}
+
+Idents(med_fibros_no_lung)<-"SampleID"
+dotplot<-DotPlot(med_fibros_no_lung, features = "RUNX1")
+dotplot_data<-dotplot[["data"]]
+dotplot_data <- subset(dotplot_data, select = c(avg.exp.scaled, id))
+names(dotplot_data)[names(dotplot_data)=="avg.exp.scaled"] <- "Runx1"
+
+
+#dotplot_data <- dotplot_data %>% cSplit(splitCols = "id", sep=".")
+
+inflam_df <- paste(med_fibros$SampleID, med_fibros$InflamScore, sep=".") %>% unique() %>% as.data.frame() %>% cSplit(splitCols = ".", sep=".")
+
+colnames(inflam_df) <- c("id_1", "inflam", "extra")
+
+inflam_df <- inflam_df %>% replace(is.na(.), 0)
+
+inflam_df$inflam <- paste(inflam_df$inflam, inflam_df$extra, sep=".")
+inflam_df$inflam <- as.double(inflam_df$inflam)
+
+dotplot_data$id_1 <- dotplot_data$id
+
+final_df <- dotplot_data %>% 
+  left_join(inflam_df, by="id_1")
+
+
+#plot
+#dotplot_data_synovium <- dotplot_data[dotplot_data$condition_2 == "Synovium",]
+ggplot(final_df, aes(x = Runx1, y = inflam)) +
+    geom_point(aes(color = factor(id_1))) +
+    stat_smooth(method = "lm",
+        col = "black",
+        se = FALSE,
+        size = 0.5)+theme_ArchR()+ theme (legend.position = "none") #+
+        #facet_wrap(~id_2)
+
+
+ml = lm(Runx1~inflam, data = final_df)
+summary(ml)$r.squared
+
+library(ggpubr)
+
+ggscatter(final_df, x = "Runx1", y = "inflam",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )+ stat_cor(method = "pearson", label.x = -1, label.y = 1.1)
+
+```
 

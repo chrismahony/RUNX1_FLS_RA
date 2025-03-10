@@ -155,267 +155,31 @@ Heatmap(Dotplot_heatmap_data_Salv)
 
 ```{r}
 
+grn <- read_csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/grn.csv")
+grn_RUNX1 <- grn %>% filter(Source == "RUNX1")
 
+med_fibros <- AddModuleScore(med_fibros, features=list(grn_RUNX1$Target), name="RUNX1_grn")
 
-Idents(med_fibros)<-'Cluster_name_case'
-C4_Lung_end_vs_ctrl<-FindMarkers(med_fibros, ident.1 = "SPARC+COL3A1+ C4_LungEndStageILD", ident.2 = "SPARC+COL3A1+ C4_LungControl")
-C4Lung_early_vs_ctrl<-FindMarkers(med_fibros, ident.1 = "SPARC+COL3A1+ C4_LungEarlyStageILD", ident.2 = "SPARC+COL3A1+ C4_LungControl")
-C4_Lung_end_vs_ctrl$gene<-rownames(C4_Lung_end_vs_ctrl)
-C4Lung_early_vs_ctrl$gene<-rownames(C4Lung_early_vs_ctrl)
+Idents(med_fibros)<-"Cluster_name"
+Dotplot_heatmap<-DotPlot(med_fibros, features = c("RUNX1", "RUNX1_grn1"))
+Dotplot_heatmap_data <- Dotplot_heatmap[["data"]]
 
-C8_Lung_end_vs_ctrl<-FindMarkers(med_fibros, ident.1 = "PTGS2+SEMA4A+ C8_LungEndStageILD", ident.2 = "PTGS2+SEMA4A+ C8_LungControl")
-C8Lung_early_vs_ctrl<-FindMarkers(med_fibros, ident.1 = "PTGS2+SEMA4A+ C8_LungEarlyStageILD", ident.2 = "PTGS2+SEMA4A+ C8_LungControl")
-C8_Lung_end_vs_ctrl$gene<-rownames(C8_Lung_end_vs_ctrl)
-C8Lung_early_vs_ctrl$gene<-rownames(C8Lung_early_vs_ctrl)
+dotplot<-Dotplot_heatmap_data %>% 
+  select(-pct.exp, -avg.exp) %>%  
+  pivot_wider(names_from = id, values_from = avg.exp.scaled) %>% 
+  as.data.frame() 
 
+dotplot$features.plot<-unique(dotplot$features.plot)
+dotplot<-na.omit(dotplot)
 
+row.names(dotplot) <- dotplot$features.plot  
+dotplot <- dotplot[,-1] %>% as.matrix()
 
-C4_Fibro_RA_vs_OA<-FindMarkers(med_fibros, ident.1 = "SPARC+COL3A1+ C4_RheumatoidArthritis", ident.2 = "SPARC+COL3A1+ C4_Osteoarthritis")
-C4_Fibro_RA_vs_OA$gene<-rownames(C4_Fibro_RA_vs_OA)
+library(ComplexHeatmap)
 
-C8_Fibro_RA_vs_OA<-FindMarkers(med_fibros, ident.1 = "PTGS2+SEMA4A+ C8_RheumatoidArthritis", ident.2 = "PTGS2+SEMA4A+ C8_Osteoarthritis")
-C8_Fibro_RA_vs_OA$gene<-rownames(C8_Fibro_RA_vs_OA)
-
-
-C8_SG_PSS_vs_SICCA<-FindMarkers(med_fibros, ident.1 = "PTGS2+SEMA4A+ C8_PSS", ident.2 = "PTGS2+SEMA4A+ C8_SICCA")
-C4_SG_PSS_vs_SICCA<-FindMarkers(med_fibros, ident.1 = "SPARC+COL3A1+ C4_PSS", ident.2 = "SPARC+COL3A1+ C4_SICCA")
-C8_SG_PSS_vs_SICCA$gene<-rownames(C8_SG_PSS_vs_SICCA)
-C4_SG_PSS_vs_SICCA$gene<-rownames(C4_SG_PSS_vs_SICCA)
-
-
+Heatmap(dotplot, border=T)
 
 ```
-```{r}
-Idents(med_fibros)<-"Tissue"
-med_fibros$tissue_case <- paste(Idents(med_fibros), med_fibros$Case, sep = "_")
-Idents(med_fibros)<-"tissue_case"
-
-Synovium_RAvsOA<-FindMarkers(med_fibros, ident.1 = "Synovium_RheumatoidArthritis", ident.2 = "Synovium_Osteoarthritis")
-Synovium_RAvsOA$gene<-rownames(Synovium_RAvsOA)
-
-
-Lung_EarlyvsCtrl<-FindMarkers(med_fibros, ident.1 = "Lung_LungEarlyStageILD", ident.2 = "Lung_LungControl")
-Lung_EarlyvsCtrl$gene<-rownames(Lung_EarlyvsCtrl)
-
-Lung_EndvsCtrl<-FindMarkers(med_fibros, ident.1 = "Lung_LungEndStageILD", ident.2 = "Lung_LungControl")
-Lung_EndvsCtrl$gene<-rownames(Lung_EndvsCtrl)
-
-
-
-
-
-```
-
-
-
-```{r}
-
-
-#med_fibros <- AddModuleScore(med_fibros, features = "RUNX1", name = "RUNX1mod")
-
-#med_fibros_meta <- med_fibros@meta.data %>% select(RUNX1mod1, )
-
-
-
-
-#create meta data splot
-med_fibros$sample_tissue_cluster<-paste(med_fibros$SampleID, med_fibros$Tissue, med_fibros$Cluster_name, sep=".")
-
-
-paste(med_fibros$InflamScore, med_fibros$LibraryID, sep="_") %>% table()
-
-#extract avg. scaled expression for your gene in each cluster and sample
-Idents(med_fibros)<-"sample_tissue_cluster"
-dotplot<-DotPlot(med_fibros, features = "RUNX1")
-dotplot_data<-dotplot[["data"]]
-dotplot_data <- subset(dotplot_data, select = c(avg.exp.scaled, id))
-names(dotplot_data)[names(dotplot_data)=="avg.exp.scaled"] <- "Runx1"
-
-
-dotplot_data <- dotplot_data %>% cSplit(splitCols = "id", sep=".")
-
-inflam_df <- paste(med_fibros$SampleID, med_fibros$InflamScore, sep=".") %>% unique() %>% as.data.frame() %>% cSplit(splitCols = ".", sep=".")
-
-colnames(inflam_df) <- c("id_1", "inflam", "extra")
-
-inflam_df <- inflam_df %>% replace(is.na(.), 0)
-
-inflam_df$inflam <- paste(inflam_df$inflam, inflam_df$extra, sep=".")
-inflam_df$inflam <- as.double(inflam_df$inflam)
-
-final_df <- dotplot_data %>% 
-  left_join(inflam_df, by="id_1")
-
-
-#plot
-#dotplot_data_synovium <- dotplot_data[dotplot_data$condition_2 == "Synovium",]
-ggplot(final_df, aes(x = Runx1, y = inflam)) +
-    geom_point(aes(color = factor(id_2))) +
-    stat_smooth(method = "lm",
-        col = "black",
-        se = FALSE,
-        size = 0.5)+theme_ArchR()+ theme (legend.position = "none") +
-        facet_wrap(~id_2)
-
-
-#ml = lm(Runx1~InflamScore, data = dotplot_data)
-#summary(ml)$r.squared
-
-library(ggpubr)
-ggscatter(final_df, x = "Runx1", y = "inflam",
-   add = "reg.line",  # Add regressin line
-   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
-   conf.int = TRUE # Add confidence interval
-   )+ stat_cor(method = "pearson", label.x = 0, label.y = 2)+
-        facet_wrap(~id_2)
-
-
-
-#filter if you want a specific cluster
-dotplot_data_C4 <- final_df[final_df$id_3 == "SPARC+COL3A1+ C4",]
-dotplot_data_C4 <- dotplot_data_C4[dotplot_data_C4$id_2 == "Synovium",]
-
-ggplot(dotplot_data_C4, aes(x = Runx1, y = inflam)) +
-    geom_point(aes(color = factor(id_2))) +
-    stat_smooth(method = "lm",
-        col = "black",
-        se = FALSE,
-        size = 0.5)+theme_ArchR()+ theme (legend.position = "none") +
-        facet_wrap(~id_2)
-
-
-
-
-ml = lm(Runx1~InflamScore, data = dotplot_data_C4)
-summary(ml)$r.squared
-
-library(ggpubr)
-
-dotplot_data_syn <- final_df[final_df$id_2 == "Synovium",]
-
-ggscatter(dotplot_data_C4, x = "Runx1", y = "inflam",
-   add = "reg.line",  # Add regressin line
-   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
-   conf.int = TRUE # Add confidence interval
-   )+ stat_cor(method = "pearson", label.x = 0, label.y = 1)+
-        facet_wrap(~id_2)
-
-
-ggplot(data=dotplot_data_C4, aes(Runx1,inflam)) + geom_point(alpha=0.6, color="grey", size=0.1) + ggtitle("C4 cluster") +theme_minimal() +
-    geom_point(data = dotplot_data_C4, color = "darkred",size=1.5)+ theme(axis.title.x = element_blank())+
-    stat_smooth(method = "lm",
-        col = "black",
-        se = T,
-        size = 0.5)+theme_ArchR()
-
-```
-
-```{r}
-
-
-med_fibros$sample_tissue<-paste(med_fibros$SampleID, med_fibros$Tissue, sep=".")
-
-
-#extract avg. scaled expression for your gene in each cluster and sample
-Idents(med_fibros)<-"sample_tissue"
-dotplot<-DotPlot(med_fibros, features = "RUNX1")
-dotplot_data<-dotplot[["data"]]
-dotplot_data <- subset(dotplot_data, select = c(avg.exp.scaled, id))
-names(dotplot_data)[names(dotplot_data)=="avg.exp.scaled"] <- "Runx1"
-
-
-dotplot_data <- dotplot_data %>% cSplit(splitCols = "id", sep=".")
-
-inflam_df <- paste(med_fibros$SampleID, med_fibros$InflamScore, sep=".") %>% unique() %>% as.data.frame() %>% cSplit(splitCols = ".", sep=".")
-
-colnames(inflam_df) <- c("id_1", "inflam", "extra")
-
-inflam_df <- inflam_df %>% replace(is.na(.), 0)
-
-inflam_df$inflam <- paste(inflam_df$inflam, inflam_df$extra, sep=".")
-inflam_df$inflam <- as.double(inflam_df$inflam)
-
-final_df <- dotplot_data %>% 
-  left_join(inflam_df, by="id_1")
-
-
-#plot
-#dotplot_data_synovium <- dotplot_data[dotplot_data$condition_2 == "Synovium",]
-ggplot(final_df, aes(x = Runx1, y = inflam)) +
-    geom_point(aes(color = factor(id_2))) +
-    stat_smooth(method = "lm",
-        col = "black",
-        se = FALSE,
-        size = 0.5)+theme_ArchR()+ theme (legend.position = "none") +
-        facet_wrap(~id_2)
-
-
-ml = lm(Runx1~InflamScore, data = dotplot_data)
-summary(ml)$r.squared
-
-library(ggpubr)
-
-final_df %>% filter(id_2 == "Synovium") %>% 
-ggscatter( x = "Runx1", y = "inflam",
-   add = "reg.line",  # Add regressin line
-   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
-   conf.int = TRUE # Add confidence interval
-   )+ stat_cor(method = "pearson", label.x = 0, label.y = 2)+
-        facet_wrap(~id_2)
-
-
-
-
-
-
-
-
-```
-
-
-
-
-
-
-```{r}
-
-
-cols <- ArchR::paletteDiscrete(med_fibros_synoviumonly@meta.data[,"Cluster_name"]) %>% as.data.frame()
-
-med_fibros_synoviumonly$Cluster_name %>% table() %>% as.data.frame() %>% 
-ggplot(aes(y=Freq, x=., fill=.))  + 
-        geom_bar(stat = 'identity', position = position_dodge(), aes(group = .),width = 1) + 
-                theme(
-            axis.text.x = element_text(angle = 45, hjust=1),
-            axis.title.y = element_blank(), 
-            axis.ticks.y = element_blank(),
-            axis.text.y = element_blank()
-            # strip.text = element_blank()
-        ) + 
-        guides(color = 'none', fill = 'none') + 
-        labs(y = '# cells')+
-  scale_y_continuous(expand = expansion(mult = c(0, 0))) +
-  scale_x_discrete(expand = expansion(add = c(0, 0)))+theme_ArchR()+scale_fill_manual(values =cols$.)+
-  theme(strip.background = element_rect(fill="white", size=1, color="white"))+RotatedAxis()
-```
-
-
-
-
-```{r}
-
-
-med_fibros$tissue_case %>% unique()
-Idents(med_fibros) <- 'tissue_case'
-levels(med_fibros)[c(1,2)]
-
-DotPlot(med_fibros, idents=levels(med_fibros)[c(1,2)], features="RUNX1")
-
-```
-
-
-
-
 
 
 

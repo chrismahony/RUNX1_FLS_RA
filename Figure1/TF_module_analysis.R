@@ -114,3 +114,42 @@ colours <- list('clusters'= ArchR::paletteDiscrete(ann$clusters))
 col_ann <- HeatmapAnnotation(df = ann, col=colours)
 
 Heatmap(dotplot[,c(1,3,6,2,4,5)], row_names_gp = gpar(fontsize = 5), cluster_columns = F,top_annotation = col_ann)
+
+
+tf_1_genes$group <- 'mod1'
+tf_2_genes$group <- 'mod2'
+tf_3_genes$group <- 'mod3'
+tf_4_genes$group <- 'mod4'
+
+all_tfs <- rbind(tf_1_genes, tf_2_genes, tf_3_genes,tf_4_genes)
+
+g <- graph_from_data_frame(all_tfs, directed = TRUE)
+
+degree_df <- data.frame(
+  Node = V(g)$name,
+  In_Degree = degree(g, mode = "in"),
+  Out_Degree = degree(g, mode = "out")
+)
+
+index <- match(degree_df$Node, all_tfs$Source)
+degree_df$cluster <- all_tfs$group[index]
+
+
+degree_df_top <- degree_df %>%
+  group_by(cluster) %>% 
+  slice_head(n = 40) 
+
+library(ggwordcloud)
+
+gg_wc <- ggplot(degree_df_top,
+                aes(label = Node, 
+                    size = Out_Degree,
+                    color = cluster)) +
+  geom_text_wordcloud(shape = "square") +
+  scale_size_area(max_size = 12) +
+  #scale_color_manual(values = mycolors) +
+  theme_minimal() +
+  facet_wrap(~cluster)
+
+
+

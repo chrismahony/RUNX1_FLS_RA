@@ -624,7 +624,7 @@ rownames(res_f) <- res_f$gene
 genes_to_highlihgt <- res_f %>% filter(Synovium_ECs_vs_Synovium_Tcells >2 & Lung_ECs_vs_Lung_Tcells> 2) %>% rownames()
 
 rownames(res3) <- res3$gene
-p3 <- ggplot(data=res3, aes(Synovium_ECs_vs_Synovium_Tcells,Lung_Control_vs_Lung_Tcells)) + geom_point(alpha=0.6, color="grey", size=0.1) + ggtitle("Lung") +theme_minimal()+
+p3 <- ggplot(data=res3, aes(Synovium_ECs_vs_Synovium_Tcells,Lung_ECs_vs_Lung_Tcells)) + geom_point(alpha=0.6, color="grey", size=0.1) + ggtitle("Lung") +theme_minimal()+
   geom_hline(yintercept=0, linetype='dotted', col = 'red', size=0.5)+geom_vline(xintercept = 0, linetype="dotted", 
                 color = "red", size=0.3) +
     geom_point(data = res_f, color = "darkred",size=0.5,  max.overlaps = 20)+labs(y= "Lung (logFC)") 
@@ -633,8 +633,6 @@ p3 <- LabelPoints(plot = p3, points = c("CXCL11", "CCL1", "IL4I1", "TNFSF10", "I
   ynudge = 1.2)+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+theme_ArchR()+ theme(axis.title.x = element_blank())
 
 p3
-
-
 
 ```
 ```{r}

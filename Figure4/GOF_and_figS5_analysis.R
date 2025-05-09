@@ -635,6 +635,207 @@ p3 <- LabelPoints(plot = p3, points = c("CXCL11", "CCL1", "IL4I1", "TNFSF10", "I
 p3
 
 ```
+
+```
+
+## Custom upset plot
+
+res2<-res1 %>% 
+  filter(padj < 0.05) %>% 
+  select(log2FoldChange, gene, comparison) %>%  
+  pivot_wider(names_from = comparison, values_from = log2FoldChange) %>% 
+  as.data.frame() 
+
+colnames(res2)
+
+res3 <- res2[,c(1,2,3,7,14,16)]
+
+res3$Lung_ECs_vs_Lung_Tcells <- res3$Lung_ECs_vs_Lung_Tcells*-1
+res3$Lung_Control_vs_Lung_ECs <- res3$Lung_Control_vs_Lung_ECs*-1
+res3$Lung_Control_vs_Lung_Tcells <- res3$Lung_Control_vs_Lung_Tcells *-1
+res3$Synovium_Control_vs_Synovium_ECs <- res3$Synovium_Control_vs_Synovium_ECs *-1
+res3$Synovium_ECs_vs_Synovium_Tcells <- res3$Synovium_ECs_vs_Synovium_Tcells *-1
+
+DEGs_human_RA_new <- subres_human_RA %>%
+  filter(
+    comparison == "EV_vs_R1C",
+    padj < 0.05,
+    abs(log2FoldChange) > log2(2)
+  )
+
+res3 <- res3[res3$gene %in% DEGs_human_RA_new$gene_name,]
+
+
+my_list <- list(
+  Sy_ECs_vs_Tcells_UP = res3 %>% filter(Synovium_ECs_vs_Synovium_Tcells > 0) %>% pull(gene), 
+  Sy_ECs_vs_Tcells_DOWN = res3 %>% filter(Synovium_ECs_vs_Synovium_Tcells < 0) %>% pull(gene),
+  Lu_ECs_vs_Tcells_UP = res3 %>% filter(Lung_ECs_vs_Lung_Tcells > 0) %>% pull(gene),
+  Lu_ECs_vs_Tcells_DOWN = res3 %>% filter(Lung_ECs_vs_Lung_Tcells < 0) %>% pull(gene)
+  )
+
+
+comb_mat <- make_comb_mat(my_list)
+my_names <- set_name(comb_mat)
+
+my_set_sizes <- set_size(comb_mat) %>% 
+  as.data.frame() %>% 
+  dplyr::rename(sizes = ".") %>% 
+  dplyr::mutate(Set = row.names(.)) 
+
+library(RColorBrewer)
+
+p1 <- my_set_sizes %>% 
+  mutate(Set = reorder(Set, sizes)) %>% 
+  ggplot(aes(x = Set, y= sizes)) +
+  geom_bar(stat = "identity", aes(fill = Set), alpha = 0.8, width = 0.7) +
+  geom_text(aes(label = sizes), 
+            size = 5, angle = 90, hjust = 0, y = 1) +
+  scale_fill_manual(values = brewer.pal(4, "Set1"),  # feel free to use some other colors  
+                     limits = my_names) + 
+  labs(x = NULL,
+       y = "Set size",
+       fill = NULL) +
+  theme_classic() +
+  theme(legend.position = "right",
+        text = element_text(size= 14),
+        axis.ticks.y = element_blank(),
+        axis.text = element_blank()
+        ) 
+
+
+p1 <- my_set_sizes %>% 
+  mutate(Set = reorder(Set, sizes)) %>% 
+  ggplot(aes(x = Set, y= sizes)) +
+  geom_bar(stat = "identity", aes(fill = Set),color="black", alpha = 0.8, width = 0.7)  +
+  scale_fill_manual(values = brewer.pal(4, "Set1"),  # feel free to use some other colors  
+                     limits = my_names) + 
+  labs(x = NULL,
+       y = "Set size",
+       fill = NULL) +
+  theme_classic() +
+  theme(legend.position = "right",
+        text = element_text(size= 14),
+        axis.ticks.y = element_blank(),
+        axis.text = element_blank()
+        ) 
+
+
+p1
+
+
+get_legend <- function(p) {
+  tmp <- ggplot_gtable(ggplot_build(p))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
+
+p2 <- get_legend(p1)
+
+my_overlap_sizes <- comb_size(comb_mat) %>% 
+  as.data.frame() %>% 
+  dplyr::rename(overlap_sizes = ".") %>% 
+  dplyr::mutate(category = row.names(.))
+
+p3 <- my_overlap_sizes %>% 
+  mutate(category = reorder(category, -overlap_sizes)) %>% 
+  ggplot(aes(x = category, y = overlap_sizes)) +
+  geom_bar(stat = "identity", fill = "grey80", color = NA, alpha = 0.8, width = 0.7) +
+  geom_text(aes(label = overlap_sizes, y = 0), 
+            size = 5, hjust = 0, vjust = 0.5) +
+  labs(y = "Intersect sizes",
+       x = NULL) +
+  theme_classic() +
+  theme(text = element_text(size= 14, color = "black"),
+        axis.text =element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_text(hjust = 0),
+        ) +
+  coord_flip()
+
+
+
+p3 <- my_overlap_sizes %>% 
+  mutate(category = reorder(category, -overlap_sizes)) %>% 
+  ggplot(aes(x = category, y = overlap_sizes)) +
+  geom_bar(stat = "identity", fill = "grey", color = "black", alpha = 0.8, width = 0.7) +
+  labs(y = "Intersect sizes",
+       x = NULL) +
+  theme_classic() +
+  theme(text = element_text(size= 14, color = "black"),
+        axis.text =element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_text(hjust = 0),
+        ) +
+  coord_flip()
+
+p3
+
+
+my_overlap_matrix <- str_split(string = my_overlap_sizes$category, pattern = "", simplify = T) %>% 
+  as.data.frame() 
+
+colnames(my_overlap_matrix) <- my_names
+
+my_overlap_matrix_tidy <- my_overlap_matrix %>% 
+  cbind(category = my_overlap_sizes$category) %>% 
+  pivot_longer(cols = !category, names_to = "Set", values_to = "value") %>% 
+  full_join(my_overlap_sizes, by = "category") %>% 
+  full_join(my_set_sizes, by = "Set")
+
+p4 <- my_overlap_matrix_tidy %>% 
+  mutate(category = reorder(category, -overlap_sizes)) %>%  
+  mutate(Set = reorder(Set, sizes)) %>%  
+  ggplot(aes(x = Set, y = category))+
+  geom_tile(aes(fill = Set, alpha = value), color = "black", size = 0.5) +
+  scale_fill_manual(values = brewer.pal(4, "Set1"), # feel free to use other colors 
+                    limits = my_names) +
+  scale_alpha_manual(values = c(0.8, 0),  # color the grid for 1, don't color for 0. 
+                     limits = c("1", "0")) +
+  labs(x = "Sets",  
+       y = "Overlap") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        text = element_text(color = "black", size= 14),
+        panel.grid = element_blank(),
+        axis.text = element_blank()
+        )
+
+p4
+
+library(RVenn)
+my_object <- RVenn::Venn(my_list)
+
+ggvenn(
+  my_object, slice = 1:3, 
+  thickness = 0.5,
+  alpha = 0.5, 
+  fill = brewer.pal(4, "Set1")
+) +
+  theme_void() +
+  theme(
+    legend.position = "none"
+  )
+
+wrap_plots(p1, p2, p4, p3, 
+          nrow = 2, 
+          ncol = 2,
+          heights = c(1, 2), # the more rows in the lower part, the longer it should be
+          widths = c(1, 0.8),
+          guides = "collect") &
+  theme(legend.position = "none")
+
+
+```
+
+                    
+
+
+
+
+
+
+
 ```{r}
 subres_f <- all_GEX_human_kidney %>% filter(padj < 0.05 & log2FoldChange > 2)
 

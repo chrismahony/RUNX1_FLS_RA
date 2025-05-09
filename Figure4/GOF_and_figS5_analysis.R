@@ -603,8 +603,9 @@ res2<-res1 %>%
 
 colnames(res2)
 
-res3 <- res2[,c(1,2,3,14,16)]
+res3 <- res2[,c(1,2,3,7,14,16)]
 
+res3$Lung_ECs_vs_Lung_Tcells <- res3$Lung_ECs_vs_Lung_Tcells*-1
 res3$Lung_Control_vs_Lung_ECs <- res3$Lung_Control_vs_Lung_ECs*-1
 res3$Lung_Control_vs_Lung_Tcells <- res3$Lung_Control_vs_Lung_Tcells *-1
 res3$Synovium_Control_vs_Synovium_ECs <- res3$Synovium_Control_vs_Synovium_ECs *-1
@@ -617,7 +618,10 @@ DEGs_human_RA <- subres_human_RA %>% filter(comparison == "EV_vs_R1C" & log2Fold
 res_f <- res3_sig[res3_sig$gene %in% DEGs_human_RA$gene_name,]
 rownames(res_f) <- res_f$gene
 
-genes_to_highlihgt <- res_f %>% filter(Synovium_ECs_vs_Synovium_Tcells >2 & Lung_Control_vs_Lung_Tcells> 2) %>% rownames()
+res_f <- res3[res3$gene %in% DEGs_human_RA$gene_name,]
+rownames(res_f) <- res_f$gene
+
+genes_to_highlihgt <- res_f %>% filter(Synovium_ECs_vs_Synovium_Tcells >2 & Lung_ECs_vs_Lung_Tcells> 2) %>% rownames()
 
 rownames(res3) <- res3$gene
 p3 <- ggplot(data=res3, aes(Synovium_ECs_vs_Synovium_Tcells,Lung_Control_vs_Lung_Tcells)) + geom_point(alpha=0.6, color="grey", size=0.1) + ggtitle("Lung") +theme_minimal()+
@@ -629,36 +633,6 @@ p3 <- LabelPoints(plot = p3, points = c("CXCL11", "CCL1", "IL4I1", "TNFSF10", "I
   ynudge = 1.2)+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+theme_ArchR()+ theme(axis.title.x = element_blank())
 
 p3
-
-p4 <- ggplot(data=res3, aes(Synovium_Control_vs_Synovium_ECs,Lung_Control_vs_Lung_ECs)) + geom_point(alpha=0.6, color="grey", size=0.1) + ggtitle("ECs") +theme_minimal()+
-  geom_hline(yintercept=0, linetype='dotted', col = 'red', size=0.5)+geom_vline(xintercept = 0, linetype="dotted", 
-                color = "red", size=0.3) +
-    geom_point(data = res_f, color = "darkred",size=0.5)+ theme(axis.title.x = element_blank())
-
-p4 <- LabelPoints(plot = p4, points = c("CXCL11", "CCL1", "IL4I1", "TNFSF10", "IRF7"), repel = TRUE, xnudge = 1,
-  ynudge = -1)+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+theme_ArchR()+ theme(axis.title.x = element_blank(),
-          axis.title.y = element_blank())
-p4
-
-plot <- plot_grid(p3, NULL, p4, align='vh', scale = 1, rel_widths = c(1, -0.07, 1), nrow=1)
-
-y.grob <- textGrob("Lung (logFC)", 
-                   gp=gpar( fontsize=10), rot=90)
-
-x.grob <- textGrob("Synovium (logFC)", 
-                   gp=gpar( fontsize=10))
-
-grid.arrange(arrangeGrob(plot, left = y.grob, bottom = x.grob))
-
-
-
-ggdraw(add_sub(plot, "Synovium (logFC)", vpadding=grid::unit(0,"lines"),y=8, x=0.5, vjust=4.5,size=10))
-
-
-
-
-
-
 
 
 

@@ -938,6 +938,14 @@ Heatmap(dotplot, cluster_rows = F, cluster_columns = F)
 ```
 
 
+```{r}
+
+levels(all)
+
+VlnPlot(all, features = "Cell..RUNX1.mean", idents=levels(all)[c(1,3)], pt.size = 0)
+
+
+```
 
 
 
@@ -1006,6 +1014,104 @@ plt_df<-coloc_res_coarse %>%
 plt_df %>%
     Heatmap(col = circlize::colorRamp2(c(-20, 0, 20), c('blue', 'white', 'red')), border = T, cluster_columns = T, cluster_rows = T)
  
+pltnew <- plt_df+t(plt_df)
+
+pltnew %>%
+    Heatmap(col = circlize::colorRamp2(c(-20, 0, 20), c('blue', 'white', 'red')), border = T, cluster_columns = T, cluster_rows = T)
+
+```
+```{r}
+
+prop_table <- table(all$samples, all$highres_grouped) %>% as.data.frame() %>% 
+    pivot_wider(names_from = Var2, values_from = Freq) %>% 
+  as.data.frame() 
+
+rownames(prop_table) <- prop_table$Var1
+prop_table$Var1 <- NULL
+
+prop_table <- prop_table/rowSums(prop_table)
+
+
+Idents(all) <- 'samples'
+
+dotplot <- DotPlot(all, features = "Cell..RUNX1.mean")
+
+dotplot <- dotplot$data
+
+table(all$samples) %>% as.data.frame()
+
+dotplot$Var1 <- dotplot$id
+prop_table$Var1 <- rownames(prop_table)
+
+
+combined_df <- merge(prop_table, dotplot, by = "Var1")
+
+
+ggplot(combined_df, aes(x=Tcells, y=avg.exp.scaled)) + 
+  geom_point()+
+  geom_smooth(method=lm, se=T)
+
+
+
+
+ggscatter(combined_df[-c(2,4,8,10),], x = "Tcells", y = "avg.exp.scaled",
+          add = "reg.line",                                 # Add regression line
+          conf.int = TRUE,                                  # Add confidence interval
+          add.params = list(color = "blue",
+                            fill = "lightgray")
+          )+
+  stat_cor(method = "pearson")+theme_ArchR()
+
+
+```
+```{r}
+
+
+df_new <- combined_df[-c(2,4,8,10),]
+
+df_new$condition <- c("early", "early", "est", "early", "est", "est")
+
+ggplot(df_new, aes(x=condition, y=Tcells))+
+  geom_violin() + geom_dotplot(binaxis='y', stackdir='center', dotsize=1)+ggtitle("Cluster1")+theme_classic()+RotatedAxis()
+cluster1
+res.aov_cluster1 <- aov(cluster1` ~ condition_2, data = pt)
+summary(res.aov_cluster1)
+stats_cluster1 <- TukeyHSD(res.aov_cluster1)
+stats_cluster1
+
+
+```
+```{r}
+
+all$condition %>% unique()
+Idents(all) <- 'highres_grouped'
+levels(all)
+
+all$condition_grouped <- paste(all$condition, all$highres_grouped, sep="_")
+
+Idents(all) <- 'condition_grouped'
+
+to_plot <- levels(all)[grep("SL_fibs2",levels(all))]
+
+VlnPlot(all, features="Cell..RUNX1.mean", idents=to_plot[c(2,3)], pt.size = 0)+stat_summary(fun.y = median.stat, geom='point', size = 1, colour = "black") 
+
+
+markers_df <- FindMarkers(all, ident.1 = "EstablishedRA_SL_fibs2", ident.2 = "Early_RA_SL_fibs2", recorrect_umi=FALSE)
+
+
+
+Idents(all) <- 'condition'
+all_f2 <- subset(all, idents=levels(all)[c(2,3)])
+test <- sc_utils(all_f2)
+
+
+library(scProportionTest)
+prop.test_1 <- permutation_test(test, cluster_identity = "highres_grouped", sample_1="Early_RA", sample_2="EstablishedRA", sample_identity="condition", n_permutations=10000)
+permutation_plot(prop.test_1, FDR_threshold = 0.01, log2FD_threshold = 0.58, order_clusters = T)#+
+  #geom_point(size=5,color = c("grey", "grey", "grey", "red", "red"))
+##
+
+
 
 
 ```

@@ -899,4 +899,55 @@ DotPlot(stim_obj, features = c("RUNX1", "MMP14", "IGF1", "endo_interacting_new1"
 
 ```
 
+```{r}
+
+subres$comparison %>% table()
+
+ 
+
+ 
+
+subres2 <- subres %>%
+
+  mutate(direction = ifelse(log2FoldChange > 0, "Up", "Down"))
+
+ 
+
+subres2$log2FoldChange <- subres$log2FoldChange * -1
+
+ 
+
+# 2. Count number of up/down genes per comparison
+
+deg_counts <- subres %>%
+
+  dplyr::group_by(comparison, direction) %>%
+
+  dplyr::summarise(count = n(), .groups = "drop")
+
+ 
+
+# 3. Plot
+
+ 
+
+deg_counts %>% filter(comparison != "R1A_vs_R1C") %>%
+
+ggplot( aes(x = comparison, y = count, fill = direction)) +
+
+  geom_bar(stat = "identity", position = "dodge") +
+
+  labs(title = "Number of Up/Down DEGs per Comparison",
+
+       x = "Comparison",
+
+       y = "Number of Genes") +
+
+  theme_minimal() +
+
+  scale_fill_manual(values = c("Up" = "red", "Down" = "blue"))+ coord_flip()+theme_ArchR()
+                      
+```
+                      
+
 

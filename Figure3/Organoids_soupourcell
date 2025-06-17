@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --ntasks 40
+#SBATCH --time 48:0:0
+#SBATCH --qos bbdefault
+#SBATCH --mail-type ALL
+#SBATCH --mem 200G
+#SBATCH --account=croftap-stia-atac
+
+
+set -e
+
+module purge; module load bluebear
+
+mkdir -p soup_CBFBI
+
+singularity exec /rds/projects/k/khanas-scrnaseq-patient/CM_Macro_Injury/CM_MI/souporcell/souporcell_latest.sif souporcell_pipeline.py \
+-i /rds/projects/m/mahonyc-cesar-data/inhibitor_organoids/count/cbfbi/outs/possorted_genome_bam.bam \
+-b /rds/projects/m/mahonyc-cesar-data/inhibitor_organoids/count/cbfbi/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
+-f /rds/projects/c/croftap-ah-sto-ipsc-01/refdata-cellranger-GRCh38-3.0.0/fasta/genome.fa -t 8 -o soup_CBFBI -k 3
+
+mkdir -p soup_DMSO
+
+singularity exec /rds/projects/k/khanas-scrnaseq-patient/CM_Macro_Injury/CM_MI/souporcell/souporcell_latest.sif souporcell_pipeline.py \
+-i /rds/projects/m/mahonyc-cesar-data/inhibitor_organoids/count/DMSO/outs/possorted_genome_bam.bam -b \
+/rds/projects/m/mahonyc-cesar-data/inhibitor_organoids/count/DMSO/outs/filtered_feature_bc_matrix/barcodes.tsv.gz \
+-f /rds/projects/c/croftap-ah-sto-ipsc-01/refdata-cellranger-GRCh38-3.0.0/fasta/genome.fa -t 8 -o soup_DMSO -k 3

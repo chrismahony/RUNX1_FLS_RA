@@ -5,11 +5,11 @@ data <- read_excel("data.xlsx")
 ggscatter(data, x = "RUNX1 expression", y = "Krenn_Global",
           add = "reg.line",
           conf.int = TRUE,
-          add.params = list(color = "blue", fill = "lightgray"),
+          add.params = list(color = "black", fill = NA),
           shape = 21,             # Hollow circles
-          color = "black",        # Border color
+          color = "red",        # Border color
           fill = "white",         # Inside fill color (optional)
-          size = 2 ,
+          size = 2.5 ,
            stroke = 1.6# Adjust size as needed
 ) +
   stat_cor(method = "pearson", label.x = 1, label.y = 1)

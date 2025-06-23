@@ -104,4 +104,8 @@ RUNX1_largebits<-rbind(RUNX1_RA_df, RUNX1_OA_df)
 
 ggplot(RUNX1_largebits, aes(Dist, Score, lty=CellType)) + geom_smooth(alpha=.1) + labs(x="Distance (towards lumen)", y="Cell Type Signal") + theme_light(base_size = 16)+theme_classic()+ scale_fill_manual(values=c("#E69F00", "#56B4E9"))
 
+
+pval <- t.test(RUNX1_largebits$Score[RUNX1_largebits$CellType=="RA"],
+               RUNX1_largebits$Score[RUNX1_largebits$CellType=="OA"])$p.value
+
 ```

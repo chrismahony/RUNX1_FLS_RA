@@ -1,4 +1,6 @@
-# Code for analysis of data for 'Runx1 is a master regulator of inflammatory fibroblast pathogenicity' paper
+# Runx1 is a master regulator of inflammatory fibroblast pathogenicity
+
+Mahony et al., In Prep.
 
 
 All new generated sequencing data for this study can be found at GSE294203, GSE292131, GSE129087, GSE294203, GSE293500, GSE292783, GSE293261, (CIA extra sample), (mouse scRNAseq)

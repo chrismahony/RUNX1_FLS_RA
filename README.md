@@ -5,7 +5,7 @@ All new generated sequencing data for this study can be found at GSE294203, GSE2
 
 This code requires the following packages (along with associated dependencies) and has been run in RStudio (v4.3.1):
 
--Seurat (v4.3.1)
+-[ ] Seurat (v4.3.1)
 -Harmony (v0.1.1) 
 -Sp (v2.0-0)
 -gsfisher (v0.2)

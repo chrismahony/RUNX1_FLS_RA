@@ -23,6 +23,7 @@ This code requires the following packages (along with associated dependencies) a
 - [ ] scMEGA (v0.2.0)
 - [ ] ArchR (v1.0.2)
 - [ ] EBImage (v.4.24.0)
+- [ ] sporkforlife (v0.0.0.9)
 
 
 Expected output: All the main outputs are plots from the above packages depicting spatial gene expression/scRNAseq gene expression

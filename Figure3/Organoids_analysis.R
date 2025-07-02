@@ -381,16 +381,23 @@ DimPlot(stia2021_rna, group.by= "pseudo.bulk.level")
 ```{r}
 
 
-dds_norm <- counts(dds, normalized=TRUE)
-dds_norm_df <- as.data.frame(dds_norm)
-dds_norm_df$Gene <- rownames(dds_norm_df)
-dds_long <- melt(dds_norm_df, id.vars = "Gene", variable.name = "Sample", value.name = "NormalizedCount")
+#dds_norm <- counts(dds, normalized=TRUE)
+#dds_norm_df <- as.data.frame(dds_norm)
+#dds_norm_df$Gene <- rownames(dds_norm_df)
+#dds_long <- melt(dds_norm_df, id.vars = "Gene", variable.name = "Sample", value.name = "NormalizedCount")
+
+dds_long <- melt(scale_sub_vsd, id.vars = "Gene", variable.name = "Sample", value.name = "NormalizedCount")
+dds_long$Sample <- rownames(dds_long)
 
 library(splitstackshape)
 dds_long <- cSplit(dds_long, splitCols="Sample",sep = "_")
+dds_long <- cSplit(dds_long, splitCols="Var2",sep = "_")
+
+names(dds_long)[names(dds_long) == "Var2_2"] <- "Sample_2"
+
 
 gene = "THY1"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -402,7 +409,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "POSTN"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -413,7 +420,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "CTHRC1"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -425,7 +432,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "COL3A1"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -436,7 +443,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "COL1A2"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -448,7 +455,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "MMP14"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -459,7 +466,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
 
 
 gene = "MMP9"
-dds_long %>% filter(Gene == gene) %>% 
+dds_long %>% filter(Var1 == gene) %>% 
 ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   geom_boxplot(aes(fill = Sample_2), outlier.shape = 16, outlier.size = 3) +
   scale_fill_brewer(palette = "Set3") +  # Use a color palette from RColorBrewer
@@ -467,6 +474,7 @@ ggplot(aes(x = Sample_2, y = NormalizedCount)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +  # Rotate x labels for clarity
   labs(title = paste0("Expression of ", gene), x = "Sample_2", y = "Normalized Count") +
   theme(plot.title = element_text(hjust = 0.5)) +theme_ArchR()+coord_flip()
+
 
 
 

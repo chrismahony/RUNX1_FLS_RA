@@ -40,6 +40,21 @@ standards$...1 <- NULL
 
 
 
+# Plot regression and calculate equation
+standards_1_50 <- Plate1_run1 %>% filter(Condition == "Standard") %>% filter(Dilution == "1_50")
+
+cols <- colnames(standards_1_50)[-c(1:3, 20:23)]
+
+# Read in absolute standar conentration
+standards <- read_excel("standards.xlsx")
+colnames(standards) <- gsub("\\s+$", "", gsub("\\[.*?\\]|\\(.*?\\)", "", colnames(standards)))
+
+standards <- as.data.frame(standards)
+#rownames(standards) <- standards$...1
+standards$...1 <- NULL
+
+
+
 standards2_dil <- standards/50
 
 models <- list()
@@ -55,7 +70,6 @@ mediablank_mean <- mediablank_mean %>% filter(Condition == "media_blank" & Dilut
 mediablank_mean <- mean(as.numeric(mediablank_mean[,1]))
 
 standards_1_50$conc <- standards2_dil[[i]]
-standards_1_50$conc <- log(standards_1_50$conc)
 
 print(standards_1_50 %>% 
     ggplot(aes(y = standards_1_50[[i]], x = conc)) + 
@@ -74,10 +88,7 @@ print(standards_1_50 %>%
 
 
 # 4/5PL curve
-standards_1_50$conc[standards_1_50$conc < 0] <- 0
-
-
-models[[i]] <- drm(standards_1_50[[i]] ~ conc, data = standards_1_50, fct = LL.4())
+models[[i]] <- drm(standards_1_50[[i]] ~ conc, data = standards_1_50, fct = LL.5())
 expr[[i]] <- as.numeric(expr[[i]])
 expr[[i]] <- expr[[i]] - mediablank_mean
 
@@ -111,11 +122,9 @@ df_avg <- df_avg %>%
 
 plots_list <- list()
 
-for (i in cols[c(5,6,8,10,11,12,13)]) {
+for (i in cols) {
   
-  df_avg_tmp <- df_avg %>% filter(batch != "batch4")
-
-  plots_list[[i]] <- ggplot(df_avg_tmp[-5,], aes(x = Condition, y = .data[[i]], fill = Condition)) +
+  plots_list[[i]] <- ggplot(df_avg, aes(x = Condition, y = .data[[i]], fill = Condition)) +
     geom_boxplot(notch = FALSE) +
     geom_jitter(width = 0.2, alpha = 0.5) +
     stat_compare_means(method = "t.test", label = "p.signif", label.y = max(df_avg[[i]], na.rm = TRUE) * 1) +  # t-test with significance asterisks
@@ -128,16 +137,13 @@ for (i in cols[c(5,6,8,10,11,12,13)]) {
   print(plots_list[[i]])
 }
 
+######### Final plots ############
 
-######### Final bar plot ############
-
-
-for (i in cols[c(6,8,12)]) {
+for (i in cols[-c(5,9)]) {
   
-    df_avg_tmp <- df_avg %>% filter(batch != "batch4")
-    df_avg_tmp <- df_avg_tmp[-5,]
-    #write.csv(df_avg_tmp, "/rds/projects/c/croftap-runx1data01/luminex/repeat_jul7_2025/luminex_source.csv")
-    
+        df_avg_tmp <- df_avg[-c(6,19,20),]
+  write.csv(df_avg_tmp, "/rds/projects/c/croftap-runx1data01/luminex/repeat_jul7_2025/luminex_source.csv")
+        
     df_avg_tmp <- df_avg_tmp %>% dplyr::select(print(i))
     
     colnames(df_avg_tmp) <- c("Condition", "Dilution", "Values")
@@ -184,9 +190,8 @@ theme(
            y = y_max + 0.01,  # space above highest point
            label = sig_label,
            size = 6))+ 
-    scale_y_continuous(expand = c(0,0)) 
+    scale_y_continuous(expand = c(0,0)     ) 
 
 
 
   }
-

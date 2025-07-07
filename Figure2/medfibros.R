@@ -851,10 +851,10 @@ DotPlot(med_fibros, idents=levels(med_fibros)[c(1,2)], features="RUNX1")
 ```{r}
 
 library(readr)
-grn <- read_csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/grn.csv")
-grn_RUNX1 <- grn %>% filter(Source == "RUNX1")
+grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
+grn_RUNX1 <- grn %>% filter(tf == "RUNX1")
 
-med_fibros <- AddModuleScore(med_fibros, features=list(grn_RUNX1$Target), name="RUNX1_grn")
+med_fibros <- AddModuleScore(med_fibros, features=list(grn_RUNX1$gene), name="RUNX1_grn")
 
 Idents(med_fibros) <- 'Tissue'
 med_fibros_no_lung <- subset(med_fibros, idents= levels(med_fibros)[-3])

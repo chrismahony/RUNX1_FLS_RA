@@ -203,6 +203,65 @@ max(subres$padj)
 subres_f <- subres %>% filter(comparison == "EV_vs_R1C" & log2FoldChange > 2 &padj < 0.01)
 write.csv(subres_f, "/rds/projects/c/croftap-visium-manuscript-01/Visium_CManalysis/runx1_oversplill/lentiviral_bulk/DEGs_human_RA.csv")
 
+
+
+df1 <- str_split("IFI6,IFI16,IFI27,IFIT2,IFIT1,IRF1,IRF5,IRF7,HLA-B,HLA-C,HLA-F,CXCL11,CXCL14,IL23A,CCL1,IL41L,BMP2,BMP7,EGF,IGF1,CXCL10", ",") %>% as.data.frame()
+colnames(df1) <- 'col1'
+
+subres_df1 <- res1[res1$gene_name %in% df1$col1,]
+#subres_df1 <- subres_df1 %>% filter(comparison == "EV_vs_R1C")
+
+df2 <-str_split("MMP9,MMP8,MMP13,ADAMTS4,ADAM21,ADAMTSL2,ADAM9,COL2A1,COL10A1,COL25A1,COL24A1,MMP14,PDGFRA", ",") %>% as.data.frame()
+
+colnames(df2) <- 'col1'
+
+subres_df2 <- res1[res1$gene_name %in% df2$col1,]
+subres_df2 <- subres_df2 %>% filter(comparison == "EV_vs_R1C")
+
+scale_sub_vsd_new <- t(scale(t(vsd_mat)))
+scale_sub_vsd_new <- scale_sub_vsd_new[rownames(scale_sub_vsd_new) %in% subres_df1$gene,]
+scale_sub_vsd_new <- scale_sub_vsd_new %>% as.data.frame()
+index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
+scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
+rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
+scale_sub_vsd_new$gene_name <- NULL
+
+Heatmap(scale_sub_vsd_new, 
+              top_annotation = col_ann, 
+              col=colorRamp2(c(-1.5, 0, 1.5), c("blue", "white", "red")),
+              row_names_gp = gpar(fontsize = 8), 
+              cluster_columns = F,
+              cluster_rows = T,
+              show_row_names = T,
+              show_column_names = F, border=T)
+
+
+scale_sub_vsd_new <- t(scale(t(vsd_mat)))
+scale_sub_vsd_new <- scale_sub_vsd_new[rownames(scale_sub_vsd_new) %in% subres_df2$gene,]
+scale_sub_vsd_new <- scale_sub_vsd_new %>% as.data.frame()
+index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
+scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
+rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
+scale_sub_vsd_new$gene_name <- NULL
+
+
+Heatmap(scale_sub_vsd_new, 
+              top_annotation = col_ann, 
+              col=colorRamp2(c(-1.5, 0, 1.5), c("blue", "white", "red")),
+              row_names_gp = gpar(fontsize = 8), 
+              cluster_columns = F,
+              cluster_rows = T,
+              show_row_names = T,
+              show_column_names = F, border=T)
+
+
+
+
+
+
+
+
+
 ```
 
 

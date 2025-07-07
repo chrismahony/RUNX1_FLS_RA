@@ -227,12 +227,12 @@ ggplot(aes(x=Runx1, y=clus_condition, fill=clus_condition))+
 
 
 ```{r}
-grn <- read_csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/grn.csv")
+grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
 
-grnRUNX1 <- grn %>% filter(Source=="RUNX1")
+grnRUNX1 <- grn %>% filter(tf=="RUNX1")
 
 
-grnRUNX1$Target <- gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grnRUNX1$Target), perl=TRUE)
+grnRUNX1$Target <- gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grnRUNX1$gene), perl=TRUE)
 
 DefaultAssay(aggr) <- "RNA"
 aggr <- AddModuleScore(aggr, features = list(grnRUNX1$Target), name="RUNX1grn")

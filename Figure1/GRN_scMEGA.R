@@ -212,6 +212,12 @@ save.image("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/anal
 DimPlot(obj.pair_all_coembed_merge_nomural, group.by = "pseudo.bulk.level")
 DimPlot(obj.pair_all_coembed_merge_nomural, group.by = "cluster.name")
 
+Idents(obj.pair_all_coembed_merge_nomural) <- 'cluster.name'
+obj.pair_all_coembed_merge_nomural <- subset(obj.pair_all_coembed_merge_nomural, idents=levels(obj.pair_all_coembed_merge_nomural)[-8])
+
+DimPlot(obj.pair_all_coembed_merge_nomural, group.by = "cluster.name")
+DimPlot(obj.pair_all_coembed_merge_nomural, group.by = "pseudo.bulk.level")
+
 ```
 ```{r}
 
@@ -307,7 +313,7 @@ tf.gene.cor <- GetTFGeneCorrelation(object = obj.pair_all_coembed_merge_nomural,
                                     trajectory.name = "Trajectory")
 
 ht3 <- GRNHeatmap(tf.gene.cor, 
-                 tf.timepoint = df.cor$time_point, column_title_gp = gpar(fontsize = 4, fontface = "bold"))
+                 tf.timepoint = df.cor$time_point)
 
 
 

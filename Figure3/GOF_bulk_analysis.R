@@ -211,7 +211,7 @@ colnames(df1) <- 'col1'
 subres_df1 <- res1[res1$gene_name %in% df1$col1,]
 #subres_df1 <- subres_df1 %>% filter(comparison == "EV_vs_R1C")
 
-df2 <-str_split("MMP9,MMP8,MMP13,ADAMTS4,ADAM21,ADAMTSL2,ADAM9,COL2A1,COL10A1,COL25A1,COL24A1,MMP14,PDGFRA", ",") %>% as.data.frame()
+df2 <-str_split("MMP9,MMP8,MMP13,ADAMTS4,ADAM21,ADAMTSL2,ADAM9,COL2A1,COL10A1,COL25A1,COL24A1,MMP14,PDGFRL", ",") %>% as.data.frame()
 
 colnames(df2) <- 'col1'
 

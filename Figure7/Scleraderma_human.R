@@ -113,5 +113,17 @@ data %>% ggplot(aes(y=Freq, x=Var1, fill=Var1))  +
   scale_y_continuous(expand = expansion(mult = c(0, 0))) +
   scale_x_discrete(expand = expansion(add = c(0, 0)))+theme_ArchR()+scale_fill_manual(values =cols$.)+
   theme(strip.background = element_rect(fill="white", size=1, color="white"))
+
+
+grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
+
+grn <- grn %>% filter(tf=="RUNX1")
+
+skin_fibs_sclerdoma <- AddModuleScore(skin_fibs_sclerdoma, features= list(grn$gene), name="RUNX1grn")
+
+Idents(skin_fibs_sclerdoma) <- 'condition'
+DotPlot(skin_fibs_sclerdoma, features=c("RUNX1", "RUNX1grn1"))
+
+                 
 ```
 

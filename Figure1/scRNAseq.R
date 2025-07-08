@@ -1076,6 +1076,24 @@ if(exists("row_cl")) {
 
 
 
+library(dplyr)
+library(readr)
+grn <- read_csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
+grn_Runx1 <- grn %>% filter(tf == "RUNX1")
+grn_Runx1$Target <- gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grn_Runx1$gene), perl=TRUE)
+
+scale_sub_vsd_f <- scale_sub_vsd[rownames(scale_sub_vsd) %in% grn_Runx1$Target,]
+Heatmap(scale_sub_vsd_f, 
+              top_annotation = col_ann, 
+              col=colorRamp2(c(-1.5, 0, 1.5), c("blue", "white", "red")),
+              row_names_gp = gpar(fontsize = 4), 
+              cluster_columns = F,
+              cluster_rows = T,
+              show_row_names = F,
+              show_column_names = F,
+              border=T)
+
+
 library(gsfisher)
 #annotation_gs<-fetchAnnotation(species = "mm")
 

@@ -53,15 +53,17 @@ col_ann <- HeatmapAnnotation(df = ann[,c("condition") ], col=colours)
 
 
 Heatmap(dotplot, row_names_gp = gpar(fontsize = 5), top_annotation = col_ann)
-Heatmap(dotplot, row_names_gp = gpar(fontsize = 5), border=T)
+Heatmap(dotplot[,c(7,5,4,8,6,2,3,9,1)], row_names_gp = gpar(fontsize = 5), border=T, cluster_columns = F)
 
 
 
 
-dotplto_1 <- dotplot %>% as.data.frame() %>%  filter(fibroblast_sublining_C1qtnf3_Col8a1 > 0.1 & fibroblast_sublining_Fmo2 > 0.1 & fibroblast_sublining_Sfrp1_Cfb > 0.1 & fibroblast_sublining_lining_Ccl7_Ccl2 > 0.1)
+dotplto_1 <- dotplot %>% as.data.frame() %>%  filter(fibroblast_sublining_C1qtnf3_Col8a1 > 0.1  & fibroblast_sublining_Sfrp1_Cfb > 0.1 & fibroblast_sublining_lining_Ccl7_Ccl2 > 0.1)
 
 
-dotplto_2 <- dotplot %>% as.data.frame() %>%  filter(fibroblast_sublining_Serpina3c_C3 > 0.1 & fibroblast_sublining_Ccl11 > 0.1 & fibroblast_sublining_Pi16 > 0.1)
+dotplot["TF_RUNX11",]
+
+dotplto_2 <- dotplot %>% as.data.frame() %>%  filter(fibroblast_sublining_Serpina3c_C3 > 0.1 & fibroblast_sublining_Ccl11 > 0.1 & fibroblast_sublining_Pi16 > 0.1 & fibroblast_sublining_Fmo2 > 0.1)
 
 dotplto_3 <- dotplot %>% as.data.frame() %>%  filter(fibroblast__Crabp1_Col23a1 > 0.1)
 
@@ -120,4 +122,46 @@ colours <- list('clusters'= ArchR::paletteDiscrete(ann$clusters))
 col_ann <- HeatmapAnnotation(df = ann, col=colours)
 
 Heatmap(dotplot[,c(1,3,6,2,4,5)], row_names_gp = gpar(fontsize = 5), cluster_columns = F,top_annotation = col_ann, border=T)
+
+
+tf_1_genes$group <- 'mod1'
+tf_2_genes$group <- 'mod2'
+tf_3_genes$group <- 'mod3'
+tf_4_genes$group <- 'mod4'
+
+all_tfs <- rbind(tf_1_genes, tf_2_genes, tf_3_genes,tf_4_genes)
+
+all_tfs$X <- NULL
+
+
+
+g <- graph_from_data_frame(all_tfs[,c(5,4,3)], directed = TRUE)
+
+degree_df <- data.frame(
+  Node = V(g)$name,
+  In_Degree = degree(g, mode = "in"),
+  Out_Degree = degree(g, mode = "out")
+)
+
+index <- match(degree_df$Node, all_tfs$Source)
+degree_df$cluster <- all_tfs$group[index]
+
+
+degree_df_top <- degree_df %>%
+  group_by(cluster) %>% 
+  slice_head(n = 40) 
+
+library(ggwordcloud)
+
+gg_wc <- ggplot(degree_df_top,
+                aes(label = Node, 
+                    size = Out_Degree,
+                    color = cluster)) +
+  geom_text_wordcloud(shape = "square") +
+  scale_size_area(max_size = 12) +
+  #scale_color_manual(values = mycolors) +
+  theme_minimal() +
+  facet_wrap(~cluster)
+
+gg_wc
 

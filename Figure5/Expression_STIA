@@ -1,0 +1,52 @@
+Idents(stia2021_rna)<-'cluster.name'
+
+dotplot <- DotPlot(stia2021_rna, features=c("Runx1", "Igf1", "Mmp14", "Cxcl5"), idents=levels(stia2021_rna)[-c(2,3,5,12)])
+
+dotplot<-dotplot$data
+
+dotplot<-dotplot %>% 
+  select(-pct.exp, -avg.exp) %>%  
+  pivot_wider(names_from = id, values_from = avg.exp.scaled) %>% 
+  as.data.frame() 
+
+dotplot$features.plot<-unique(dotplot$features.plot)
+dotplot<-na.omit(dotplot)
+
+row.names(dotplot) <- dotplot$features.plot  
+dotplot <- dotplot[,-1] %>% as.matrix()
+
+library(ComplexHeatmap)
+
+Heatmap(dotplot, border=T, cluster_columns = T)
+
+
+
+Idents(stia2021_rna)<-'cluster.name'
+stia2021_rna_SLfibs<-subset(stia2021_rna, idents=levels(stia2021_rna)[-c(1,2,3,5,12)])
+
+Idents(stia2021_rna_SLfibs)<-'experiment'
+stia2021_rna_SLfibs<-subset(stia2021_rna_SLfibs, idents=levels(stia2021_rna_SLfibs)[2])
+
+stia2021_rna_SLfibs <- stia2021_rna_SLfibs %>% ScaleData()
+
+Idents(stia2021_rna_SLfibs)<-'condition'
+
+dotplot <- DotPlot(stia2021_rna_SLfibs, features=c("Runx1", "Igf1", "Mmp14", "Cxcl5"))
+
+dotplot<-dotplot$data
+
+dotplot<-dotplot %>% 
+  select(-pct.exp, -avg.exp) %>%  
+  pivot_wider(names_from = id, values_from = avg.exp.scaled) %>% 
+  as.data.frame() 
+
+dotplot$features.plot<-unique(dotplot$features.plot)
+dotplot<-na.omit(dotplot)
+
+row.names(dotplot) <- dotplot$features.plot  
+dotplot <- dotplot[,-1] %>% as.matrix()
+
+library(ComplexHeatmap)
+
+Heatmap(dotplot[,c(1,3,6,2,4,5)], border=T, cluster_columns = F)
+

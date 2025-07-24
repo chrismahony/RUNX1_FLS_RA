@@ -1,19 +1,19 @@
-setwd("/rds/projects/c/croftap-labdata2/Chris/SG_slidescanner/stellaris/analysis")
+setwd("/rds/projects/c/croftap-labdata2/Chris/20250724_SalivaryGlands")
 library(readxl)
+library(dplyr)
 analysis <- read_excel("analysis.xlsx")
 
-analysis$aggr_mm <- analysis$`aggr/total area` * 1000
 
 
 summary_data <- analysis %>%
   dplyr::group_by(Condition) %>%
   dplyr::summarise(
-    Mean = mean(aggr_mm),
-    SD = sd(aggr_mm))
+    Mean = mean(Area),
+    SD = sd(Area))
   
 
 
-t_res <- t.test(aggr_mm ~ Condition, data = analysis)
+t_res <- t.test(Area ~ Condition, data = analysis)
 
 # Get p-value and significance label
 p_val <- t_res$p.value
@@ -25,7 +25,7 @@ sig_label <- case_when(
   TRUE          ~ "ns"
 )
 
-y_max <- max(analysis$aggr_mm, na.rm = TRUE)
+y_max <- max(analysis$Area, na.rm = TRUE)
   
 
 summary_data %>%
@@ -34,7 +34,7 @@ summary_data %>%
            fill = c("lightgrey", "red")) +  # Bars
   geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2) +  # Error bars
   geom_jitter(data = analysis, 
-              aes(x = Condition, y = aggr_mm), 
+              aes(x = Condition, y = Area), 
               width = 0.15, color = "black", size = 2.5, alpha = 0.8) +  # Points
   theme(
     panel.background = element_blank(),
@@ -51,4 +51,3 @@ summary_data %>%
            y = max(summary_data$Mean + summary_data$SD) + 0,  # dynamically compute max y
            label = sig_label,
            size = 6)
-

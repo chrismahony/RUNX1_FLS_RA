@@ -341,3 +341,20 @@ ggplot(aes(x=id_4, y=avg.exp.scaled)) +
         guides(color = FALSE, fill = FALSE) + 
         scale_x_continuous(breaks = c(0,3,7,15,22,28))+theme_ArchR()+facet_wrap("id_1_1")
 
+
+dotplot %>% 
+  filter(!id_1_1 %in% c("SL_Bglap", "SL_Clu")) %>%  
+  ggplot(aes(x = factor(id_4), y = avg.exp.scaled)) + 
+  geom_boxplot(fill = "#ffb09c", color = "black", outlier.shape = NA, alpha = 0.8) + 
+  RotatedAxis() + 
+  theme(
+    axis.line = element_line(),
+    panel.border = element_rect(colour = "black", fill = NA, size = 1)
+  ) +
+  guides(color = FALSE, fill = FALSE) +
+  theme_ArchR() +
+  facet_wrap(~factor(id_1_1, levels = c("SL_Ccl2", "SL_Col8a1", "LL_Col22a1", "SL_Cfb",
+                                        "SL_Chodl", "SL_Col23a1", "SL_Pi16", "SL_C3", 
+                                        "SL_Ccl11", "SL_Fmo2")), nrow = 2)
+
+

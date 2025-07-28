@@ -473,4 +473,16 @@ clustree(fibro_linning_peri, prefix ="ATAC_snn_res.")
 
 fibro_linning_peri <- FindClusters(fibro_linning_peri, resolution = 0.06, algorithm = 3, graph.name = "ATAC_snn")
 
+Idents(fibro_linning_peri) <- "cm_clusters"
+DimPlot(fibro_linning_peri)
+
+DefaultAssay(fibro_linning_peri) <- 'ATACexpr'
+
+marjers_atacexpr_named <- FindAllMarkers(fibro_linning_peri, only.pos = T)
+
+FeaturePlot(fibro_linning_peri, features="Myh11")
+
+DotPlot(fibro_linning_peri, features=c( "Sfrp1", "Cxcl5", "Postn","Cthrc1",  "Pi16","Cd34", "Col15a1","Prg4", "Col22a1", "Notch3", "Myh11"))+RotatedAxis()+ scale_size(range = c(2, 8))
+
+
 ```

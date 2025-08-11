@@ -28,14 +28,17 @@ sig_label <- case_when(
 y_max <- max(analysis$Area, na.rm = TRUE)
   
 
+
 summary_data %>%
   ggplot(aes(x = Condition, y = Mean)) +
-  geom_bar(stat = "identity", color = "black", width = 0.95, 
-           fill = c("lightgrey", "red")) +  # Bars
-  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2) +  # Error bars
-  geom_jitter(data = analysis, 
-              aes(x = Condition, y = Area), 
-              width = 0.15, color = "black", size = 2.5, alpha = 0.8) +  # Points
+  geom_bar(stat = "identity", color = c("black", "red"), fill = "white", width = 0.65) +  # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = c("black", "red")) +  # Error bars
+  geom_jitter(
+    data = analysis, 
+    aes(x = Condition, y = Area, color = Condition), 
+    width = 0.25, size = 3, alpha = 1
+  ) +
+  scale_color_manual(values = c("CTRL" = "black", "EXP" = "red")) +
   theme(
     panel.background = element_blank(),
     plot.background = element_blank(),
@@ -46,8 +49,11 @@ summary_data %>%
   ) +
   labs(title = "Bar Plot with Individual Points and SD",
        y = "Measured Value") +
-  annotate("text", 
-           x = 1.5, 
-           y = max(summary_data$Mean + summary_data$SD) + 0,  # dynamically compute max y
-           label = sig_label,
-           size = 6)
+  annotate(
+    "text", 
+    x = 1.5, 
+    y = max(summary_data$Mean + summary_data$SD), 
+    label = sig_label,
+    size = 6
+  )+
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))

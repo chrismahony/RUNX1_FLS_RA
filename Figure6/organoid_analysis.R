@@ -509,4 +509,27 @@ theme(
            y = y_max + 0.01,  # space above highest point
            label = sig_label,
            size = 6)
+
+
+summary_data %>%
+  ggplot(aes(x = condition, y = Mean)) +
+  geom_bar(stat = "identity", color = c("red", "black"), fill = "white", width = 0.65) +  # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = c("red", "black")) +  # Error bars
+  geom_jitter(
+    data = all_data, 
+    aes(x = condition, y = b.mean, color = condition), 
+    width = 0.25, size = 3, alpha = 1
+  ) +
+  scale_color_manual(values = c("noEC" = "black", "EC" = "red")) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    plot.margin = margin(t = 5, r = 5, b = 0, l = 5)
+  ) +
+  labs(title = "Bar Plot with Individual Points and SD",
+       y = "Measured Value") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))
 ```

@@ -26,25 +26,54 @@ y_max <- max(measurments$`Mean intensity`, na.rm = TRUE)
 summary_data$Condition <- factor(summary_data$Condition, levels = c("Unstimulated", "DLL4 treated"))
 measurments$Condition <- factor(measurments$Condition, levels = c("Unstimulated", "DLL4 treated"))
 
-summary_data %>% 
-ggplot( aes(x = Condition, y = Mean)) +
-  geom_bar(stat = "identity", color = "black", width = 0.8, fill=c("red", "lightgrey")) +               # Bars
-  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, size = 0.8) +        # Error bars
-  geom_jitter(data = measurments, aes(x = Condition, y = `Mean intensity`), width = 0.15,         # Points
-              color = "black", size = 3.5, alpha = 0.8) +
-   theme(
-      panel.background = element_blank(),       # remove inner panel background
-      plot.background = element_blank(),        # remove outer background
-      panel.grid.major = element_blank(),       # remove major grid lines
-      panel.grid.minor = element_blank(),       # remove minor grid lines
-      axis.line = element_line(color = "black"), # keep axis lines
+summary_data %>%
+  ggplot(aes(x = Condition, y = Mean)) +
+  geom_bar(stat = "identity", color = c("red", "black"), fill = "white", width = 0.65) +  # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = c("red", "black")) +  # Error bars
+  geom_jitter(
+    data = measurments, 
+    aes(x = Condition, y = `Mean intensity`, color = Condition), 
+    width = 0.25, size = 3, alpha = 1
+  ) +
+  scale_color_manual(values = c("Unstimulated" = "black", "DLL4 treated" = "red")) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
     plot.margin = margin(t = 5, r = 5, b = 0, l = 5)
-      ) +
-  annotate("text", 
-           x = 1.5,  # midpoint between bar 1 and 2
-           y = y_max + 0.5,  # space above highest point
-           label = sig_label,
-           size = 6)
+  ) +
+  labs(title = "Bar Plot with Individual Points and SD",
+       y = "Measured Value") +
+  annotate(
+    "text", 
+    x = 1.5, 
+    y = max(summary_data$Mean + summary_data$SD), 
+    label = sig_label,
+    size = 6
+  )+
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))
 
 
-
+summary_data %>%
+  ggplot(aes(x = Condition, y = Mean)) +
+  geom_bar(stat = "identity", color = c("red", "black"), fill = "white", width = 0.65) +  # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = c("red", "black")) +  # Error bars
+  geom_jitter(
+    data = measurments, 
+    aes(x = Condition, y = `Mean intensity`, color = Condition), 
+    width = 0.25, size = 3, alpha = 1
+  ) +
+  scale_color_manual(values = c("Unstimulated" = "black", "DLL4 treated" = "red")) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black"),
+    plot.margin = margin(t = 5, r = 5, b = 0, l = 5)
+  ) +
+  labs(title = "Bar Plot with Individual Points and SD",
+       y = "Measured Value") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))

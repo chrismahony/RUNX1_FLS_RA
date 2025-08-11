@@ -27,7 +27,7 @@ measurments$Condition <- factor(measurments$Condition, levels = c("DMSO", "CBFβ
 
 summary_data %>% 
 ggplot( aes(x = Condition, y = Mean)) +
-  geom_bar(stat = "identity", color = c("red", "black"), width = 0.65, fill="white") +               # Bars
+  geom_bar(stat = "identity", color = c("red", "black"), width = 0.55, fill="white") +               # Bars
   geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, color = c("red", "black")) +        # Error bars
   geom_jitter(data = measurments, aes(x = Condition, y = `Live cells`, color = Condition), width = 0.25,         # Points
                size = 3, alpha = 1)+

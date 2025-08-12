@@ -23,27 +23,26 @@ y_max <- max(cell_detections$PLA_IF_cell, na.rm = TRUE)
 
 
 summary_data$Condition <- factor(summary_data$Condition, levels = c("DMSO", "CBFBI"))
-measurments$Condition <- factor(measurments$Condition, levels = c("DMSO", "CBFBI"))
+
 
 summary_data %>% 
 ggplot( aes(x = Condition, y = Mean)) +
-  geom_bar(stat = "identity", color = "black", width = 0.8, fill=c("red", "lightgrey"))  +        # Error bars
-  geom_jitter(data = cell_detections, aes(x = Condition, y = PLA_IF_cell), width = 0.15,         # Points
-              color = "black", size = 2.5, alpha = 0.8) +               # Bars
-  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2)+
+  geom_bar(stat = "identity", color = c("red", "black"), width = 0.55, fill=c("white"))  +        # Error bars
+  geom_jitter(data = cell_detections, aes(x = Condition, y = PLA_IF_cell, color=Condition), width = 0.15, size = 2.5, alpha = 1) +               # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, color = c("red", "black"))+
+  scale_color_manual(values = c("DMSO" = "black", "CBFBI" = "red"))+
     # Remove gap between bar and x-axis
   theme(
     panel.background = element_blank(),       # remove inner panel background
     plot.background = element_blank(),        # remove outer background
     panel.grid.major = element_blank(),       # remove major grid lines
     panel.grid.minor = element_blank(),       # remove minor grid lines
-    axis.line = element_line(color = "black"), # keep axis lines
-    plot.margin = margin(t = 5, r = 5, b = 0, l = 5)
+    axis.line = element_line(color = "black")
   )+
   annotate("text", 
            x = 1.5,  # midpoint between bar 1 and 2
            y = y_max+0.001,  # space above highest point
            label = sig_label,
            size = 6)+
-  ggtitle("Cell/mm2")
-
+  ggtitle("Cell/mm2")+
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+NoLegend()

@@ -30,20 +30,21 @@ measurments$Condition <- factor(measurments$Condition, levels = c("CTRL", "RUNX1
 
 summary_data %>% 
   ggplot(aes(x = Condition, y = Mean)) +
-  geom_bar(stat = "identity", color = "black", width = 0.8, fill = c("lightgrey", "red")) +  # Bars
-  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, size = 0.8) +          # Error bars
-  geom_jitter(data = measurments, aes(x = Condition, y = `Final score`), width = 0.15,       # Points
-              color = "black", size = 3.5, alpha = 0.8) +
+  geom_bar(stat = "identity", color = c("black", "red"), width = 0.6, fill = c("white")) +  # Bars
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.3, size = 0.8, color = c("black", "red")) +          # Error bars
+  geom_jitter(data = measurments, aes(x = Condition, y = `Final score`, color=Condition), width = 0.15,       # Points
+              size = 3, alpha = 1) +
   theme(
     panel.background = element_blank(),       # remove inner panel background
     plot.background = element_blank(),        # remove outer background
     panel.grid.major = element_blank(),       # remove major grid lines
     panel.grid.minor = element_blank(),       # remove minor grid lines
-    axis.line = element_line(color = "black"),# keep axis lines
-    plot.margin = margin(t = 5, r = 5, b = 0, l = 5)
+    axis.line = element_line(color = "black")
   ) +
+  scale_color_manual(values = c("CTRL" = "black", "RUNX1_KO" = "red"))+
   annotate("text", 
            x = 1.5,  # midpoint between bar 1 and 2
            y = y_max + 0.1,  # space above highest point
            label = sig_label,
-           size = 6) 
+           size = 6) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+NoLegend()

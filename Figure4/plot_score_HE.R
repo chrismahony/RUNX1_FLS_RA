@@ -1,5 +1,7 @@
 library(readxl)
-measurments <- read_excel("/rds/projects/c/croftap-labdata2/Chris/20250723_H&E/scoreing.xlsx")
+
+#finalised scores for figure
+measurments <- read_excel("//its-rds.bham.ac.uk/rdsprojects/c/croftap-labdata2/Chris/HE_final_paper/scoreing.xlsx")
 
 summary_data <- measurments %>%
   dplyr::group_by(Condition) %>%

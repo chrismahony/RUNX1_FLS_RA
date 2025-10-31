@@ -1,6 +1,10 @@
-setwd("/rds/projects/c/croftap-stia-atac/CM_multiome/Functional_validation/mouse_tamoxifen_exp/exp2")
 library(readxl)
-scores <- read_excel("scores_avg.xlsx")
+library(dplyr)
+library(tidyverse)
+scores <- read_excel("//its-rds.bham.ac.uk/rdsprojects/c/croftap-stia-atac/CM_multiome/Functional_validation/mouse_tamoxifen_exp/exp2/scores_avg.xlsx")
+
+
+#scores <- scores %>% filter(Repeat == 4)
 
 scores$D1 <- scores$D1 - scores$D0
 scores$D2 <- scores$D2 - scores$D0
@@ -14,29 +18,13 @@ scores$D8 <- scores$D8 - scores$D0
 scores$D0 <- scores$D0 - scores$D0
 
 
-#scores$D8 <- NULL
-
-#scores <- scores %>% filter(Repeat == 2) 
-
-# Include STIA scores from SAM (different Seurm batch)
-#scores <- scores %>% filter(!mouse %in% c(2,6,7))
-
-# Excluded STIA score from SAM
-#scores <- scores %>% filter(mouse %in% c(1,3,4,5,8,9))
-
-
-# Remove mouse where indicated was sick
-scores <- scores %>% filter(!mouse %in% c(30))
-
+scores$D8 <- NULL
 
 measurement_cols <- grep("^D\\d+", names(scores), value = TRUE)
 
 df_avg <- scores %>%filter(!treatment == "SAM") %>% 
   group_by(mouse, treatment, Joint) %>%
   dplyr::summarise(across(all_of(measurement_cols), mean, na.rm = TRUE), .groups = "drop")
-
-
-#df_avg[df_avg < 0] <- 0
 
 
 measurements2 <- df_avg  %>% pivot_longer(cols=colnames(df_avg)[-c(1:3)],
@@ -95,44 +83,6 @@ measurements2$treatmant_day <- paste(measurements2$treatment, measurements2$Day,
 
 
 
-#curve_plots <- list()
-#for (i in 1:length(unique(scores$Joint))){
-#curve_plots[[i]] <- scores %>% filter(Joint == unique(scores$Joint)[[i]]) %>% 
-#ggplot( aes(x=Day, y=Score, group=treatment, color=treatment)) + 
-#  geom_line() +
-#  geom_point()+
-#  geom_errorbar(aes(ymax=Score_sd, ymin=Score), width=.2,
-#                 position=position_dodge(0.05))+labs(title="Runx1 mouse exp1", x="STIA Day", y = "Measurement")+
-#   theme_classic() +
-#   scale_color_manual(values=c('#4D4D4D','red', 'blue'))+ggtitle(unique(scores$Joint)[[i]])#
-#
-#print(curve_plots[[i]])
-#}
-
-
-
-R_paw_AUC <- list()
-for ( i in 1:length(unique(measurements2$mouse))){
-
-measurements3 <- measurements2 %>% filter(Joint == "R_paw")
-
-measurements4 <- measurements3 %>% filter(mouse == unique(measurements3$mouse)[[i]])
-
-library(pracma)
-x_numeric <- as.numeric(gsub("D", "", measurements4$Day))
-R_paw_AUC[[i]] <- trapz(x_numeric, measurements4$Score)
-
-}
-
-R_paw_AUC <- R_paw_AUC %>% as.data.frame() %>% t %>% as.data.frame()
-rownames(R_paw_AUC) <- unique(measurements2$mouse)
-
-R_paw_AUC$mouse <- rownames(R_paw_AUC)
-
-index <- match(R_paw_AUC$mouse, measurements3$mouse)
-R_paw_AUC$treatment <- measurements3$treatment[index]
-
-
 # Stats
 measurements3 <- measurements2 %>% filter(Joint == "ankle")
 res.aov2 <- aov(Score ~ treatment + Day, data = measurements3)
@@ -159,53 +109,7 @@ pairwise_results <- measurements3 %>%
   dplyr::select(Day, pw_tests) %>%
   unnest(pw_tests)
 
-
-
-
-measurements3 <- measurements2 %>% filter(Joint == "R_paw")
-res.aov2 <- aov(Score ~ treatment + Day, data = measurements3)
-summary(res.aov2)
-plot(res.aov2, 1)
-plot(res.aov2, 2)
-aov_residuals <- residuals(object = res.aov2)
-shapiro.test(x = aov_residuals )
-TukeyHSD(res.aov2, which = "treatment")
-
-library(purrr)
-pairwise_results <- measurements3 %>%
-  group_by(Day) %>%
-  nest() %>%
-  mutate(
-    pw_tests = map(data, ~ {
-      # Apply pairwise t-test
-      result <- pairwise.t.test(.x$Score, .x$treatment, p.adjust.method = "none")
-      
-      # Tidy the result into a data frame
-      broom::tidy(result)
-    })
-  ) %>%
-  dplyr::select(Day, pw_tests) %>%
-  unnest(pw_tests)
-
-
-library(ggpubr)
-library(rstatix)
-
-stat.test <- R_paw_AUC  %>%
-  t_test(V1 ~ treatment) %>%
-  adjust_pvalue(method = "bonferroni") %>%
-  add_significance()
-
-stat.test <- stat.test %>% add_xy_position(x = "treatment")
-
-p1 <- ggplot(R_paw_AUC, aes(x=treatment, y=V1)) +
-  geom_boxplot(fill=c('darkgrey',"darkred"))+geom_point()+
-  theme_classic()+ stat_pvalue_manual(stat.test)+labs(title="R paw", x="", y = "AU")
-
-p1
-
-
-
+pairwise_results
 
 
 Ankle_AUC <- list()
@@ -242,8 +146,11 @@ stat.test <- Ankle_AUC  %>%
 
 stat.test <- stat.test %>% add_xy_position(x = "treatment")
 
-p2 <- ggplot(Ankle_AUC, aes(x=treatment, y=V1)) +
-  geom_boxplot(fill=c('darkgrey',"darkred"))+geom_point()+
-  theme_classic()+ stat_pvalue_manual(stat.test)+labs(title="Ankle", x="", y = "AU")
+p2 <- ggplot(Ankle_AUC, aes(x=treatment, y=V1, color=treatment)) +
+  geom_boxplot(fill=c('white',"white"))+geom_point(position = position_jitter(width = 0.1), size = 3)+
+  theme_classic()+ stat_pvalue_manual(stat.test)+labs(title="Ankle", x="", y = "AU")+  scale_color_manual(values = c("CTRL" = "#4D4D4D", "TAM" = "red"))
 
 p2
+
+
+

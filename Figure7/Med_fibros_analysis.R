@@ -2,9 +2,14 @@
 ###HEatmap
 library(readr)
 grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
-grn_RUNX1 <- grn %>% filter(tf == "RUNX1")
 
-med_fibros <- AddModuleScore(med_fibros, features=list(grn_RUNX1$gene), name="RUNX1_grn")
+library(babelgene)
+grn_Runx1 <- grn %>% filter(tf=="RUNX1")
+grn_Runx1$gene <-   gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grn_Runx1$gene), perl=TRUE)
+
+human_genes <- orthologs(grn_Runx1$gene, species="mouse", human = FALSE)
+
+med_fibros <- AddModuleScore(med_fibros, features=list(human_genes$human_symbol), name="RUNX1_grn")
 
 Idents(med_fibros) <- 'Tissue'
 med_fibros_no_lung <- subset(med_fibros, idents= levels(med_fibros)[-3])

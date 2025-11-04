@@ -40,14 +40,21 @@ VlnPlot(UC_fibs, features = "RUNX1")
 ```
 
 ```{r}
-grn_Runx1 <- grn %>% filter(Source=="RUNX1")
+library(babelgene)
+library(readr)
+library(dplyr)
+library(Seurat)
+library(ggplot2)
+df_grn2_new_FINAL <- read_csv("//its-rds.bham.ac.uk/rdsprojects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
+View(df_grn2_new_FINAL)
 
+grn_Runx1 <- df_grn2_new_FINAL %>% filter(tf=="RUNX1")
+grn_Runx1$gene <-   gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grn_Runx1$gene), perl=TRUE)
+
+human_genes <- orthologs(grn_Runx1$gene, species="mouse", human = FALSE)
 UC_fibs <- AddModuleScore(UC_fibs, features = list(grn_Runx1$Target), name = "RUNX1grn")
 
-
-
 cols <- ArchR::paletteDiscrete(UC_fibs@meta.data[, "Cluster"])
-
 DimPlot(UC_fibs, group.by = "Cluster", cols=cols)
 
 

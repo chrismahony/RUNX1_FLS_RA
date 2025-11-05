@@ -28,10 +28,17 @@ library(viridis)
 
 
 ```{r}
-grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
-grn_RUNX1 <- grn %>% filter(tf == "RUNX1")
 
-merging_A<- AddModuleScore(merging_A, features = list(grn_runx1$gene), name = "RUNX1_grn")
+grn <- read.csv("/rds/projects/m/mahonyc-cesar-data/fibro_analysis/scMEGA_repeat/df_grn2_new_FINAL.csv")
+
+grn_Runx1 <- grn %>% filter(tf=="RUNX1")
+grn_Runx1$gene <-   gsub("(?<=\\b)([a-z])", "\\U\\1", tolower(grn_Runx1$gene), perl=TRUE)
+
+human_genes <- orthologs(grn_Runx1$gene, species="mouse", human = FALSE)
+
+merging_A<- AddModuleScore(merging_A, features = list(human_genes$human_symbol), name = "RUNX1_grn")
+
+
 SpatialFeaturePlot(merging_A, features = "RUNX1_grn1", images = "slice1.17", min.cutoff = "q5",
   max.cutoff = "q95" )
 
@@ -41,8 +48,8 @@ SpatialFeaturePlot(merging_A, features = "RUNX1_grn1", images = "slice1.11", min
 SpatialFeaturePlot(merging_A, features = "RUNX1_grn1", images = "slice1.16", min.cutoff = "q5",
   max.cutoff = "q95")
 
-merging_largebits_RA<-AddModuleScore(merging_largebits_RA, features = list(grn_runx1$gene), name = "RUNX1_grn")
-merging_largebits_OA<-AddModuleScore(merging_largebits_OA, features = list(grn_runx1$gene), name = "RUNX1_grn")
+merging_largebits_RA<-AddModuleScore(merging_largebits_RA, features = list(human_genes$human_symbol), name = "RUNX1_grn")
+merging_largebits_OA<-AddModuleScore(merging_largebits_OA, features = list(human_genes$human_symbole), name = "RUNX1_grn")
 
 
 RUNX1_RA<-merging_largebits_RA@meta.data

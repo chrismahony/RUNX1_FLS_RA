@@ -3,6 +3,8 @@ measurments <- read_excel("/rds/projects/c/croftap-stia-atac/CM_multiome/Functio
 
 measurments$cell_image <- paste(measurments$`Cell number`, measurments$Image, sep="_")
 
+measurments<- measurments %>% filter(Repeat != "2")
+
 summary_data <- measurments %>%
   dplyr::group_by(Condition) %>%
   dplyr::summarise(

@@ -338,6 +338,10 @@ library(babelgene)
 mouse <- orthologs(genes = degs$gene, species = "mouse")
 mouse_up <- orthologs(genes = degs_up$gene, species = "mouse")
 
+Idents(stia2021_rna) <- 'cluster.name'
+stia2021_rna <- subset(stia2021_rna, idents=levels(stia2021_rna)[-13])
+stia2021_rna <- ScaleData(stia2021_rna)
+
 stia2021_rna <- AddModuleScore(stia2021_rna, features=list(mouse_up$symbol), name="inhibotor_up")
 
 stia2021_rna <- AddModuleScore(stia2021_rna, features=list(mouse$symbol), name="inhibotor")

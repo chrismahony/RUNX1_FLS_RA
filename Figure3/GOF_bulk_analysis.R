@@ -1,14 +1,12 @@
 
 
-```{r}
 
-counts2 <- counts_all %>% select(-c(Chr, Start,End, Strand, Length))
+counts_all <- read.delim("/rds/projects/m/mahonyc-runx1-bulk-seq-data/lentivrial_GOF/count2_star/counts_all.txt", comment.char="#", row.names = 1)
+
+counts2_F <- counts_all %>% select(-c(Chr, Start,End, Strand, Length))
 
 
-counts2_F <- counts2 %>% select(c(1:2, 4:5, 7:8, 10:12))
-colnames(counts2_F) <- c("R1A1", "R1A2", "R1C1", "R1C2", "EV1", "EV2", "EV4", "R1A4", "R1C4")
-
-counts2_F <- counts2_F[c(5,6,7,1,2,8,3,4,9)]
+colnames(counts2_F) <- c("EV1", "EV2", "EV4","R1A1", "R1A2","R1A4","R1C1", "R1C2",   "R1C4" )
 
 meta_data=colnames(counts2_F)
 meta_data<-as.data.frame(meta_data)
@@ -18,8 +16,7 @@ meta_data$condition <- condition
 colnames(meta_data)<-c("sample", "condition")
 
 
-```
-```{r}
+
 meta_data$sample<-as.factor(meta_data$sample)
 meta_data$disease<-as.factor(meta_data$condition)
 
@@ -131,100 +128,47 @@ Heatmap(scale_sub_vsd,
               cluster_columns = F,
               cluster_rows = T,
               show_row_names = F,
-              show_column_names = F)
-```
-```{r}
 
-annotation_gs <- fetchAnnotation(species="hs", ensembl_version=NULL, ensembl_host=NULL)
+subres <- subres %>%
+  mutate(direction = if_else(log2FoldChange < 0, "up", "down"))
 
-
-index <- match(subres$gene, annotation_gs$ensembl_id)
-subres$gene_name <- annotation_gs$gene_name[index]
+subres$cluster <- paste(subres$comparison, subres$direction, sep="_")
 
 
+data <-table(subres$cluster) %>% as.data.frame()
+data <- data[-c(5,6),]
+data$direction <- c("down", "up", "down", "up")
 
 
-```
+ggplot(data, aes(fill=direction, y=Freq, x=Var1, label = Freq)) + 
+    geom_bar(position="stack", stat="identity")+theme_ArchR() +
+  geom_text(size = 3, position = position_stack(vjust = 0.5))+
+    scale_fill_viridis(discrete = T)+coord_flip()+scale_fill_manual(values = c("lightblue","red"))
 
 
-
-```{r}
-
-#plot genes in RUNX1 GRN from mouse stia
-
-grn_runx1_human <- grn %>% filter(Source== "RUNX1")
-
-
-library(babelgene)
-
-human_for_heatmap <- orthologs(genes = row_cl_k3$gene, species = "mouse", human = F)
-heatmap_rows <-  orthologs(genes = rownames(vsd_mat), species = "mouse")
-
-vsd_mat_new <- vsd_mat
-
-subres_new <- res1[rownames(res1) %in% human_for_heatmap$human_ensembl, ]
-
-  
-sub_vsd_mat2 <- vsd_mat[rownames(vsd_mat) %in% human_for_heatmap$human_ensembl, ]
-        sub_vsd_mat2 <- t(scale(t(sub_vsd_mat2)))  
-  
-  res1 %>% 
-      filter(padj < 0.05) %>%
-      mutate('score' = log2FoldChange*(-log10(pvalue))) %>%
-      arrange(desc(abs(score))) -> subres
-
-    
-  
-col_ann <- HeatmapAnnotation(df = meta_data)
-Heatmap(sub_vsd_mat2, 
-              top_annotation = col_ann, 
-              col=colorRamp2(c(-1.5, 0, 1.5), c("blue", "white", "red")),
-              row_names_gp = gpar(fontsize = 4), 
-              cluster_columns = F,
-              cluster_rows = T,
-              show_row_names = F,
-              show_column_names = F)
-
-
-
-
-```
-
-
-
-
-
-
-```{r}
-
-unique(subres$comparison)
-
-max(subres$padj)
-subres_f <- subres %>% filter(comparison == "EV_vs_R1C" & log2FoldChange > 2 &padj < 0.01)
-write.csv(subres_f, "/rds/projects/c/croftap-visium-manuscript-01/Visium_CManalysis/runx1_oversplill/lentiviral_bulk/DEGs_human_RA.csv")
-
-
+ggplot(data, aes(fill=direction, y=Freq, x=Var1, label = Freq)) + 
+    geom_bar(position="stack", stat="identity")+theme_ArchR() +
+    scale_fill_viridis(discrete = T)+coord_flip()+scale_fill_manual(values = c("blue","red"))
 
 df1 <- str_split("IFI6,IFI16,IFI27,IFIT2,IFIT1,IRF1,IRF5,IRF7,HLA-B,HLA-C,HLA-F,CXCL11,CXCL14,IL23A,CCL1,IL41L,BMP2,BMP7,EGF,IGF1,CXCL10", ",") %>% as.data.frame()
 colnames(df1) <- 'col1'
 
-subres_df1 <- res1[res1$gene_name %in% df1$col1,]
+subres_df1 <- res1[res1$gene %in% df1$col1,]
 #subres_df1 <- subres_df1 %>% filter(comparison == "EV_vs_R1C")
 
 df2 <-str_split("MMP9,MMP8,MMP13,ADAMTS4,ADAM21,ADAMTSL2,ADAM9,COL2A1,COL10A1,COL25A1,COL24A1,MMP14,PDGFRL", ",") %>% as.data.frame()
-
 colnames(df2) <- 'col1'
 
-subres_df2 <- res1[res1$gene_name %in% df2$col1,]
+subres_df2 <- res1[res1$gene %in% df2$col1,]
 subres_df2 <- subres_df2 %>% filter(comparison == "EV_vs_R1C")
 
 scale_sub_vsd_new <- t(scale(t(vsd_mat)))
 scale_sub_vsd_new <- scale_sub_vsd_new[rownames(scale_sub_vsd_new) %in% subres_df1$gene,]
 scale_sub_vsd_new <- scale_sub_vsd_new %>% as.data.frame()
-index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
-scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
-rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
-scale_sub_vsd_new$gene_name <- NULL
+#index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
+#scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
+#rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
+#scale_sub_vsd_new$gene_name <- NULL
 
 Heatmap(scale_sub_vsd_new, 
               top_annotation = col_ann, 
@@ -239,10 +183,10 @@ Heatmap(scale_sub_vsd_new,
 scale_sub_vsd_new <- t(scale(t(vsd_mat)))
 scale_sub_vsd_new <- scale_sub_vsd_new[rownames(scale_sub_vsd_new) %in% subres_df2$gene,]
 scale_sub_vsd_new <- scale_sub_vsd_new %>% as.data.frame()
-index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
-scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
-rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
-scale_sub_vsd_new$gene_name <- NULL
+#index <- match(rownames(scale_sub_vsd_new), annotation_gs$ensembl_id)
+#scale_sub_vsd_new$gene_name <- annotation_gs$gene_name[index]
+#rownames(scale_sub_vsd_new) <- scale_sub_vsd_new$gene_name
+#scale_sub_vsd_new$gene_name <- NULL
 
 
 Heatmap(scale_sub_vsd_new, 
@@ -256,12 +200,66 @@ Heatmap(scale_sub_vsd_new,
 
 
 
+write.csv(subres, "/rds/projects/m/mahonyc-runx1-bulk-seq-data/lentivrial_GOF/count2_star/analysis/DEGs_GOF.csv")
 
 
 
 
 
 
-```
+subres_up <- subres %>% filter(log2FoldChange < 0.1 & comparison == "EV_vs_R1C" & gene != "RUNX1")
+
+NatMed_AliverniniEtAl_2020_FLS <- AddModuleScore(NatMed_AliverniniEtAl_2020_FLS, features=list(subres_up$gene), name = "fibs_up")
+
+
+NatMed_AliverniniEtAl_2020_FLS$group_cluster<-paste(NatMed_AliverniniEtAl_2020_FLS$group, NatMed_AliverniniEtAl_2020_FLS$clusters,  sep=".")
+Idents(NatMed_AliverniniEtAl_2020_FLS) <- 'group_cluster'
+
+dotplot <- DotPlot(NatMed_AliverniniEtAl_2020_FLS,features=c("fibs_up1", "RUNX1"))+
+  geom_point(aes(size=pct.exp), shape = 21, colour="black", stroke=0.5) +
+  scale_colour_viridis(option="magma") +
+  guides(size=guide_legend(override.aes=list(shape=21, colour="black", fill="white")))+ scale_size(range = c(2, 8))+RotatedAxis()
+
+
+dotplot<-dotplot$data
+
+dotplot<-dotplot %>% 
+  dplyr::select(-pct.exp, -avg.exp) %>%  
+  pivot_wider(names_from = id, values_from = avg.exp.scaled) %>% 
+  as.data.frame() 
+
+dotplot$features.plot<-unique(dotplot$features.plot)
+dotplot<-na.omit(dotplot)
+
+dotplot <- dotplot[c(1,2,4,6,8,10,3,5,7,9,11)]
+
+
+row.names(dotplot) <- dotplot$features.plot  
+dotplot <- dotplot[,-1] %>% as.matrix()
+
+library(ComplexHeatmap)
+
+
+levels(NatMed_AliverniniEtAl_2020_FLS) %>% as.data.frame()
+
+
+df <- levels(NatMed_AliverniniEtAl_2020_FLS) %>% as.data.frame()
+#df$condition <- c("A", "R", "A", "R", "A", "R", "A", "R", "A", "R")
+
+colours <- list('sample' = ArchR::paletteDiscrete(NatMed_AliverniniEtAl_2020_FLS@meta.data[, "group_cluster"]))
+
+colnames(df) <- 'group_cluster'
+                  
+col_ann <- HeatmapAnnotation(df = df, col=colours)
+means <- colMeans(dotplot) %>% as.data.frame()
+colnames(means) <- 'mean'
+
+column_ha = HeatmapAnnotation(bar1 = anno_barplot(means), height  = unit(3, "cm"))
+
+Heatmap(dotplot, top_annotation = column_ha, cluster_columns = F)
+
+
+
+
 
 
